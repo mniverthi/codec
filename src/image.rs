@@ -4,6 +4,7 @@ use std::io::Read;
 use crate::chunk;
 
 const DIMENSION_OFFSET: usize = 4;
+#[derive(Debug, Default)]
 pub struct PngImage {
     pub width: u32,
     pub height: u32,
