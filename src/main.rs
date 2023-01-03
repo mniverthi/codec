@@ -1,4 +1,5 @@
 mod chunk;
+mod filters;
 mod image;
 use std::path::Path;
 use std::{env, fs};
@@ -19,6 +20,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let compressed_data = chunk::combine_chunk_data(&chunks);
     let uncompressed_data = image::inflate_bytes(&compressed_data).unwrap_or(vec![0]);
     let png_image = image::PngImage::new(&chunks[0], &uncompressed_data);
+    if png_image.data.len() as u32
+        != png_image.height * (1 + png_image.width * filters::BYTES_PER_PIXEL as u32)
+    {
+        Err("Invalid image data")?;
+    }
+    let result = filters::reconstruct_image(&png_image)?;
     // println!("{:?}", uncompressed_data);
     // println!("{}", uncompressed_data.len());
     Ok(())

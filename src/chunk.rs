@@ -42,10 +42,6 @@ pub fn extract_chunks(image_bytes: &[u8]) -> Result<Vec<Chunk>, Box<dyn std::err
         let crc = combine_bytes(&image_bytes[idx..(idx + CRC_OFFSET)]);
         idx += CRC_OFFSET;
 
-        // println!("{}", chunk_length);
-        // println!("{}", chunk_type);
-        // println!("{:?}", chunk_data_buffer);
-        // println!("{}", crc);
         let curr_chunk = Chunk {
             length: chunk_length,
             data_type: chunk_type.to_string(),
