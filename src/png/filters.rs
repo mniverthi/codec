@@ -81,26 +81,27 @@ fn reverse_paeth_filter(curr_scan_line: &[u8], prev_reconstructed_line: &[u8]) -
     out
 }
 pub fn reconstruct_image(
-    png_image: &frame::PngImage,
+    metadata: &frame::PngImageMetadata,
+    data: &[u8],
 ) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
     let mut reconstruction = Vec::new();
-    let width = png_image.width as usize;
-    let height = png_image.height as usize;
+    let width = metadata.width as usize;
+    let height = metadata.height as usize;
     let stride: usize = 1 + width * BYTES_PER_PIXEL;
     let default_buffer = vec![0 as u8; stride - 1];
     assert_eq!(
-        png_image.data.len() as u32,
-        png_image.height * stride as u32,
+        data.len() as u32,
+        metadata.height * stride as u32,
         "Invalid image data, dimension mismatch"
     );
     for idx in (0..height * stride).step_by(stride) {
-        let curr_scan_line = &png_image.data[idx + 1..idx + stride];
+        let curr_scan_line = &data[idx + 1..idx + stride];
         let prev_reconstructed_line = if reconstruction.len() != 0 {
             &reconstruction[reconstruction.len() - (stride - 1)..reconstruction.len()]
         } else {
             &default_buffer
         };
-        let filter_type = match_filter(png_image.data[idx])?;
+        let filter_type = match_filter(data[idx])?;
         let mut reconstructed_row = match filter_type {
             PngFilter::Zero(0) => reverse_zero_filter(curr_scan_line),
             PngFilter::Sub(1) => reverse_sub_filter(curr_scan_line),

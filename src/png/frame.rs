@@ -2,11 +2,10 @@ use std::error::Error;
 use std::io::Read;
 
 use crate::png::chunk;
-use crate::png::filters;
 
 const DIMENSION_OFFSET: usize = 4;
 #[derive(Debug, Default)]
-pub struct PngImage {
+pub struct PngImageMetadata {
     pub width: u32,
     pub height: u32,
     pub bit_depth: u8,
@@ -14,11 +13,20 @@ pub struct PngImage {
     pub compression_method: u8,
     pub filter_method: u8,
     pub interlace_method: u8,
+}
+#[derive(Debug)]
+pub struct PngImage {
+    pub metadata: PngImageMetadata,
     pub data: Vec<u8>,
 }
-impl PngImage {
-    pub fn new(header_chunk: &chunk::Chunk, uncompressed_data: &[u8]) -> Self {
-        let png_image = PngImage {
+impl PngImageMetadata {
+    pub fn new(header_chunk: &chunk::Chunk) -> Self {
+        assert_eq!(
+            header_chunk.data_type, "IHDR",
+            "Chunk is not a header chunk, instead is {}",
+            &header_chunk.data_type
+        );
+        let png_image_meta = PngImageMetadata {
             width: chunk::combine_bytes(&header_chunk.data[0..DIMENSION_OFFSET]),
             height: chunk::combine_bytes(
                 &header_chunk.data[DIMENSION_OFFSET..2 * DIMENSION_OFFSET],
@@ -28,13 +36,16 @@ impl PngImage {
             compression_method: header_chunk.data[2 * DIMENSION_OFFSET + 2],
             filter_method: header_chunk.data[2 * DIMENSION_OFFSET + 3],
             interlace_method: header_chunk.data[2 * DIMENSION_OFFSET + 4],
-            data: uncompressed_data.to_vec(),
         };
-        assert_eq!(
-            png_image.data.len() as u32,
-            png_image.height * (1 + png_image.width * filters::BYTES_PER_PIXEL as u32),
-            "Invalid image data, dimensions mismatch"
-        );
+        png_image_meta
+    }
+}
+impl PngImage {
+    pub fn new(meta: PngImageMetadata, data: &[u8]) -> Self {
+        let png_image = PngImage {
+            metadata: meta,
+            data: data.to_vec(),
+        };
         png_image
     }
 }
