@@ -1,7 +1,7 @@
 use std::error::Error;
 use std::io::Read;
 
-use crate::chunk;
+use crate::png::chunk;
 
 const DIMENSION_OFFSET: usize = 4;
 #[derive(Debug, Default)]

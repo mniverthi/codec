@@ -1,4 +1,4 @@
-use crate::frame;
+use crate::png::frame;
 pub const BYTES_PER_PIXEL: usize = 4;
 
 #[derive(Debug)]
