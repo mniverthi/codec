@@ -2,6 +2,7 @@ use std::error::Error;
 use std::io::Read;
 
 use crate::png::chunk;
+use crate::png::filters;
 
 const DIMENSION_OFFSET: usize = 4;
 #[derive(Debug, Default)]
@@ -17,7 +18,7 @@ pub struct PngImage {
 }
 impl PngImage {
     pub fn new(header_chunk: &chunk::Chunk, uncompressed_data: &[u8]) -> Self {
-        PngImage {
+        let png_image = PngImage {
             width: chunk::combine_bytes(&header_chunk.data[0..DIMENSION_OFFSET]),
             height: chunk::combine_bytes(
                 &header_chunk.data[DIMENSION_OFFSET..2 * DIMENSION_OFFSET],
@@ -28,7 +29,13 @@ impl PngImage {
             filter_method: header_chunk.data[2 * DIMENSION_OFFSET + 3],
             interlace_method: header_chunk.data[2 * DIMENSION_OFFSET + 4],
             data: uncompressed_data.to_vec(),
-        }
+        };
+        assert_eq!(
+            png_image.data.len() as u32,
+            png_image.height * (1 + png_image.width * filters::BYTES_PER_PIXEL as u32),
+            "Invalid image data, dimensions mismatch"
+        );
+        png_image
     }
 }
 pub fn inflate_bytes(data: &[u8]) -> Result<Vec<u8>, Box<dyn Error>> {

@@ -19,11 +19,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let compressed_data = png::chunk::combine_chunk_data(&chunks);
     let uncompressed_data = png::frame::inflate_bytes(&compressed_data).unwrap_or(vec![0]);
     let png_image = png::frame::PngImage::new(&chunks[0], &uncompressed_data);
-    if png_image.data.len() as u32
-        != png_image.height * (1 + png_image.width * png::filters::BYTES_PER_PIXEL as u32)
-    {
-        Err("Invalid image data")?;
-    }
     let result = png::filters::reconstruct_image(&png_image)?;
     save_buffer(
         &Path::new("image.png"),
