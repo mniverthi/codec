@@ -24,7 +24,6 @@ pub fn encode_bytes(raw_bytes: &[u8], w: u32, h: u32, cc: u8, cs: u8) -> Vec<u8>
         a: 255,
     };
     let mut curr_streak: u8 = 0;
-    let mut run: u8 = 0;
     let total_bytes =
         (header_chunk.width * header_chunk.height * header_chunk.channels as u32) as usize;
     for i in (0..total_bytes as usize).step_by(header_chunk.channels as usize) {
@@ -35,18 +34,18 @@ pub fn encode_bytes(raw_bytes: &[u8], w: u32, h: u32, cc: u8, cs: u8) -> Vec<u8>
             a: raw_bytes[i + A_OFFSET],
         };
         if curr_pixel == prev_pixel {
-            run += 1;
-            if run == 62 || i == (total_bytes - header_chunk.channels as usize) {
-                buffer.push(OP_RUN | (run - 1));
-                run = 0;
+            curr_streak += 1;
+            if curr_streak == 62 || i == (total_bytes - header_chunk.channels as usize) {
+                buffer.push(OP_RUN | (curr_streak - 1));
+                curr_streak = 0;
             }
         } else {
             let cache_idx =
                 index_position(curr_pixel.r, curr_pixel.g, curr_pixel.b, curr_pixel.a) as usize;
             assert!(cache_idx >= 0 && cache_idx < 64);
-            if run > 0 {
-                buffer.push(OP_RUN | (run - 1));
-                run = 0;
+            if curr_streak > 0 {
+                buffer.push(OP_RUN | (curr_streak - 1));
+                curr_streak = 0;
             } else if cache[cache_idx] == curr_pixel {
                 buffer.push(OP_INDEX | cache_idx as u8);
             } else {
