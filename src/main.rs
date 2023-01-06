@@ -1,4 +1,6 @@
 mod png;
+mod qoi;
+mod utils;
 use image::save_buffer;
 use std::path::Path;
 use std::{env, fs};

@@ -2,6 +2,7 @@ use std::error::Error;
 use std::io::Read;
 
 use crate::png::chunk;
+use crate::utils::combine_bytes;
 
 const DIMENSION_OFFSET: usize = 4;
 #[derive(Debug, Default)]
@@ -27,10 +28,8 @@ impl PngImageMetadata {
             &header_chunk.data_type
         );
         let png_image_meta = PngImageMetadata {
-            width: chunk::combine_bytes(&header_chunk.data[0..DIMENSION_OFFSET]),
-            height: chunk::combine_bytes(
-                &header_chunk.data[DIMENSION_OFFSET..2 * DIMENSION_OFFSET],
-            ),
+            width: combine_bytes(&header_chunk.data[0..DIMENSION_OFFSET]),
+            height: combine_bytes(&header_chunk.data[DIMENSION_OFFSET..2 * DIMENSION_OFFSET]),
             bit_depth: header_chunk.data[2 * DIMENSION_OFFSET],
             color_type: header_chunk.data[2 * DIMENSION_OFFSET + 1],
             compression_method: header_chunk.data[2 * DIMENSION_OFFSET + 2],

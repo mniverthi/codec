@@ -2,6 +2,7 @@ const CHUNK_LENGTH_OFFSET: usize = 4;
 const CHUNK_TYPE_OFFSET: usize = 4;
 const CRC_OFFSET: usize = 4;
 const PNG_HEADER_OFFSET: usize = 8;
+use crate::utils::combine_bytes;
 #[derive(Debug, Default)]
 pub struct Chunk {
     pub length: u32,
@@ -52,13 +53,7 @@ pub fn extract_chunks(image_bytes: &[u8]) -> Result<Vec<Chunk>, Box<dyn std::err
     }
     Ok(chunks)
 }
-pub fn combine_bytes(bytes: &[u8]) -> u32 {
-    let one = bytes[0] as u32;
-    let two = bytes[1] as u32;
-    let three = bytes[2] as u32;
-    let four = bytes[3] as u32;
-    (one << 24 | two << 16 | three << 8 | four) as u32
-}
+
 pub fn combine_chunk_data(chunks: &[Chunk]) -> Vec<u8> {
     let mut buffer: Vec<u8> = Vec::new();
     for c in chunks {
